@@ -2,9 +2,6 @@
 #include "type.hpp"
 #include <algorithm>
 
-namespace cml {
-
-// Gradient-descent parameter bundle for linear models (weights + bias).
 struct LinearParams {
     Vec weights{};
     double bias = 0.0;
@@ -12,7 +9,9 @@ struct LinearParams {
     LinearParams operator-(const LinearParams &other) const {
         LinearParams result;
         result.weights.resize(weights.size());
-        for (size_t i = 0; i < weights.size(); ++i) result.weights[i] = weights[i] - other.weights[i];
+        for (size_t i = 0; i < weights.size(); ++i) {
+            result.weights[i] = weights[i] - other.weights[i];
+        }
         result.bias = bias - other.bias;
         return result;
     }
@@ -20,7 +19,9 @@ struct LinearParams {
     LinearParams operator*(double scalar) const {
         LinearParams result;
         result.weights.resize(weights.size());
-        for (size_t i = 0; i < weights.size(); ++i) result.weights[i] = weights[i] * scalar;
+        for (size_t i = 0; i < weights.size(); ++i) {
+            result.weights[i] = weights[i] * scalar;
+        }
         result.bias = bias * scalar;
         return result;
     }
@@ -28,7 +29,9 @@ struct LinearParams {
     LinearParams operator/(double scalar) const {
         LinearParams result;
         result.weights.resize(weights.size());
-        for (size_t i = 0; i < weights.size(); ++i) result.weights[i] = weights[i] / scalar;
+        for (size_t i = 0; i < weights.size(); ++i) {
+            result.weights[i] = weights[i] / scalar;
+        }
         result.bias = bias / scalar;
         return result;
     }
@@ -36,7 +39,9 @@ struct LinearParams {
     LinearParams operator+(const LinearParams &other) const {
         LinearParams result;
         result.weights.resize(weights.size());
-        for (size_t i = 0; i < weights.size(); ++i) result.weights[i] = weights[i] + other.weights[i];
+        for (size_t i = 0; i < weights.size(); ++i) {
+            result.weights[i] = weights[i] + other.weights[i];
+        }
         result.bias = bias + other.bias;
         return result;
     }
@@ -47,6 +52,6 @@ struct LinearParams {
     }
 };
 
-inline LinearParams operator*(double scalar, const LinearParams &params) { return params * scalar; }
-
-} // namespace cml
+inline LinearParams operator*(double scalar, const LinearParams &params) {
+    return params * scalar;
+}

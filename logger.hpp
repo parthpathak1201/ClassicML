@@ -1,5 +1,4 @@
 #pragma once
-#include "config.hpp"
 #include <cmath>
 #include <iomanip>
 #include <iostream>
@@ -65,56 +64,39 @@ inline void print_raw(const char *color, const std::string &line) {
     std::cout << color << line << Color::Reset << '\n';
 }
 
-inline bool log_enabled() { return cml::verbosity != cml::Verbosity::SILENT; }
-inline bool log_debug() { return cml::verbosity == cml::Verbosity::DEBUG; }
-
 } // namespace detail
 
-// Emits an [INFO] line when verbosity is BASIC or DEBUG.
 template<typename... Args>
 void info(Args &&...args) {
-    if (!detail::log_enabled()) return;
     detail::print_impl(Color::Gray, "[INFO] ", std::forward<Args>(args)...);
 }
 
-// Emits an [OK] line when verbosity is BASIC or DEBUG.
 template<typename... Args>
 void success(Args &&...args) {
-    if (!detail::log_enabled()) return;
     detail::print_impl(Color::Green, "[OK]   ", std::forward<Args>(args)...);
 }
 
-// Emits a [WARN] line when verbosity is BASIC or DEBUG.
 template<typename... Args>
 void warn(Args &&...args) {
-    if (!detail::log_enabled()) return;
     detail::print_impl(Color::Yellow, "[WARN] ", std::forward<Args>(args)...);
 }
 
-// Emits an [ERR] line (always shown unless SILENT; DEBUG adds detail elsewhere).
 template<typename... Args>
 void error(Args &&...args) {
-    if (cml::verbosity == cml::Verbosity::SILENT) return;
     detail::print_impl(Color::Red, "[ERR]  ", std::forward<Args>(args)...);
 }
 
-// Prints a bold section header when verbosity is BASIC or DEBUG.
 template<typename... Args>
 void header(Args &&...args) {
-    if (!detail::log_enabled()) return;
     detail::print_impl(Color::BoldCyan, "", std::forward<Args>(args)...);
 }
 
-// Prints a horizontal rule when verbosity is BASIC or DEBUG.
 inline void divider() {
-    if (!detail::log_enabled()) return;
     detail::print_raw(Color::Gray, "────────────────────────────────────────────────────────────");
 }
 
-// Prints training epoch progress when verbosity is BASIC or DEBUG.
 template<typename... Args>
 void epoch(int e, int total, Args &&...args) {
-    if (!detail::log_enabled()) return;
     const int width = detail::digit_count(total);
     std::cout << Color::BoldCyan << "[Epoch " << std::setw(width) << e << "/" << total << "]"
               << Color::Reset;
@@ -122,10 +104,8 @@ void epoch(int e, int total, Args &&...args) {
     std::cout << Color::Reset << '\n';
 }
 
-// Prints a named metric value when verbosity is BASIC or DEBUG.
 template<typename... Args>
 void metric(const std::string &name, Args &&...values) {
-    if (!detail::log_enabled()) return;
     std::cout << Style::Bold << "  " << name << Style::Reset << "  →  " << Color::Green;
     (detail::print_arg(std::forward<Args>(values)), ...);
     std::cout << Color::Reset << '\n';

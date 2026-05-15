@@ -1,6 +1,0 @@
-*.o
-*.obj
-err.txt
-*.exe
-*.out
-.vscode/
