@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG -dynamiclib -Wl,-headerpad_max_install_names -o libml_core.dylib -install_name @rpath/libml_core.dylib CMakeFiles/ml_core.dir/src/classicml_lib.cpp.o

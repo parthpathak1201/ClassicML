@@ -1,0 +1,12 @@
+/Users/parthpathak/ClassicML/build/CMakeFiles/ml_core.dir
+/Users/parthpathak/ClassicML/build/CMakeFiles/decision_tree_demo.dir
+/Users/parthpathak/ClassicML/build/CMakeFiles/gaussian_nb_demo.dir
+/Users/parthpathak/ClassicML/build/CMakeFiles/kmeans_demo.dir
+/Users/parthpathak/ClassicML/build/CMakeFiles/knn_demo.dir
+/Users/parthpathak/ClassicML/build/CMakeFiles/lasso_regression_demo.dir
+/Users/parthpathak/ClassicML/build/CMakeFiles/linear_regression_demo.dir
+/Users/parthpathak/ClassicML/build/CMakeFiles/logistic_regression_demo.dir
+/Users/parthpathak/ClassicML/build/CMakeFiles/ridge_regression_demo.dir
+/Users/parthpathak/ClassicML/build/CMakeFiles/svm_demo.dir
+/Users/parthpathak/ClassicML/build/CMakeFiles/edit_cache.dir
+/Users/parthpathak/ClassicML/build/CMakeFiles/rebuild_cache.dir

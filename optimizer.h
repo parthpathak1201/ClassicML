@@ -1,4 +1,5 @@
 #pragma once
+#include "config.hpp"
 #include "logger.hpp"
 #include <vector>
 #include <functional>
@@ -6,6 +7,8 @@
 #include <numeric>
 #include <algorithm>
 #include <cassert>
+
+namespace cml {
 
 template<typename ParamType, typename DataType>
 class Optimizer {
@@ -124,3 +127,5 @@ private:
 class Adam {
     //baad me
 };
+
+} // namespace cml

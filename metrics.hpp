@@ -8,6 +8,7 @@
 // precision/recall/f1 are binary only — pass pos= to specify positive class label.
 // confusion_matrix supports multi-class — rows=actual, cols=predicted.
 #pragma once
+#include "config.hpp"
 #include "type.hpp"
 #include "logger.hpp"
 #include <map>
@@ -17,6 +18,9 @@
 #include <cmath>
 #include <iomanip>
 
+namespace cml {
+
+// Classification accuracy: fraction of matching labels.
 inline double accuracy(const Vec& y_true, const Vec& y_pred) {
     if (y_true.size() != y_pred.size()) throw std::invalid_argument("Size mismatch");
     double correct = 0;
@@ -129,3 +133,5 @@ inline void regression_report(const Vec& y_true, const Vec& y_pred) {
     Log::metric("MAE", mae(y_true, y_pred));
     Log::divider();
 }
+
+} // namespace cml
