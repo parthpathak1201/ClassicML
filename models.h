@@ -128,6 +128,9 @@ public:
     enum DistanceType { Manhattan, Euclidean, Cosine };
     int k;
     DistanceType distance_type;
+
+    // Stored exactly as passed to fit(). The library does not scale internally; callers own
+    // preprocessing and must pass prediction data in the same feature space.
     Matrix X_train;
     Vec y_train;
 

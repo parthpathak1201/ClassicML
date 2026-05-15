@@ -37,6 +37,7 @@ private:
     bool verbose;
 
 public:
+    // Fixed seed keeps SGD/MiniBatch shuffling reproducible without adding public API surface.
     GradientDescent(Type t = Batch, double lr = 0.01, size_t bs = 32, double l2 = 0.0)
         : type(t), learning_rate(lr), batch_size(bs), l2_lambda(l2), n_samples(0), rng(42), verbose(false) {}
 
