@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+namespace cml {
 namespace {
 
 std::vector<std::string> split_csv_line(const std::string &line) {
@@ -244,3 +245,5 @@ void print_vec(const Vec &v, int n_elems) {
         Log::info("... (", (v.size() - static_cast<size_t>(elems_to_print)), " more)");
     }
 }
+
+} // namespace cml

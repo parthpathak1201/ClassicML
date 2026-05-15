@@ -1,0 +1,1 @@
+/usr/bin/c++ -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/lasso_regression_demo.dir/demos/lasso_regression_demo.cpp.o -o lasso_regression_demo  libml_core.a

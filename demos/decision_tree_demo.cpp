@@ -3,7 +3,9 @@
 #include "../ino.h"
 #include "../metrics.hpp"
 #include "demo_common.hpp"
-#include "../models.cpp"
+#include "../models.h"
+
+using namespace cml;
 
 int main() {
     Log::header("DecisionTree Demo");

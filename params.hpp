@@ -1,6 +1,9 @@
 #pragma once
 #include "type.hpp"
 #include <algorithm>
+#include <cstddef>
+
+namespace cml {
 
 struct LinearParams {
     Vec weights{};
@@ -9,9 +12,7 @@ struct LinearParams {
     LinearParams operator-(const LinearParams &other) const {
         LinearParams result;
         result.weights.resize(weights.size());
-        for (size_t i = 0; i < weights.size(); ++i) {
-            result.weights[i] = weights[i] - other.weights[i];
-        }
+        for (size_t i = 0; i < weights.size(); ++i) result.weights[i] = weights[i] - other.weights[i];
         result.bias = bias - other.bias;
         return result;
     }
@@ -19,9 +20,7 @@ struct LinearParams {
     LinearParams operator*(double scalar) const {
         LinearParams result;
         result.weights.resize(weights.size());
-        for (size_t i = 0; i < weights.size(); ++i) {
-            result.weights[i] = weights[i] * scalar;
-        }
+        for (size_t i = 0; i < weights.size(); ++i) result.weights[i] = weights[i] * scalar;
         result.bias = bias * scalar;
         return result;
     }
@@ -29,9 +28,7 @@ struct LinearParams {
     LinearParams operator/(double scalar) const {
         LinearParams result;
         result.weights.resize(weights.size());
-        for (size_t i = 0; i < weights.size(); ++i) {
-            result.weights[i] = weights[i] / scalar;
-        }
+        for (size_t i = 0; i < weights.size(); ++i) result.weights[i] = weights[i] / scalar;
         result.bias = bias / scalar;
         return result;
     }
@@ -39,19 +36,14 @@ struct LinearParams {
     LinearParams operator+(const LinearParams &other) const {
         LinearParams result;
         result.weights.resize(weights.size());
-        for (size_t i = 0; i < weights.size(); ++i) {
-            result.weights[i] = weights[i] + other.weights[i];
-        }
+        for (size_t i = 0; i < weights.size(); ++i) result.weights[i] = weights[i] + other.weights[i];
         result.bias = bias + other.bias;
         return result;
     }
 
-    void zero() {
-        std::fill(weights.begin(), weights.end(), 0.0);
-        bias = 0.0;
-    }
+    void zero() { std::fill(weights.begin(), weights.end(), 0.0); bias = 0.0; }
 };
 
-inline LinearParams operator*(double scalar, const LinearParams &params) {
-    return params * scalar;
-}
+inline LinearParams operator*(double scalar, const LinearParams &params) { return params * scalar; }
+
+} // namespace cml

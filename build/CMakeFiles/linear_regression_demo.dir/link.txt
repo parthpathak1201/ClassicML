@@ -1,0 +1,1 @@
+/usr/bin/c++ -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/linear_regression_demo.dir/demos/linear_regression_demo.cpp.o -o linear_regression_demo  libml_core.a

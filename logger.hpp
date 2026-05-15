@@ -1,11 +1,13 @@
 #pragma once
-#include <cmath>
+#include "config.hpp"
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <type_traits>
 #include <utility>
+
+namespace cml {
 
 namespace Color {
 inline constexpr const char *Red = "\033[31m";
@@ -34,13 +36,12 @@ inline constexpr const char *Reset = "\033[0m";
 namespace Log {
 namespace detail {
 
+inline bool quiet() { return g_verbosity == Verbosity::SILENT; }
+
 inline int digit_count(int n) {
     if (n <= 0) return 1;
     int d = 0;
-    while (n > 0) {
-        ++d;
-        n /= 10;
-    }
+    while (n > 0) { ++d; n /= 10; }
     return d;
 }
 
@@ -66,74 +67,41 @@ inline void print_raw(const char *color, const std::string &line) {
 
 } // namespace detail
 
-template<typename... Args>
-void info(Args &&...args) {
-    detail::print_impl(Color::Gray, "[INFO] ", std::forward<Args>(args)...);
-}
+template<typename... Args> void info(Args &&...args) { if (!detail::quiet()) detail::print_impl(Color::Gray, "[INFO] ", std::forward<Args>(args)...); }
+template<typename... Args> void success(Args &&...args) { if (!detail::quiet()) detail::print_impl(Color::Green, "[OK]   ", std::forward<Args>(args)...); }
+template<typename... Args> void warn(Args &&...args) { if (!detail::quiet()) detail::print_impl(Color::Yellow, "[WARN] ", std::forward<Args>(args)...); }
+template<typename... Args> void error(Args &&...args) { if (!detail::quiet()) detail::print_impl(Color::Red, "[ERR]  ", std::forward<Args>(args)...); }
+template<typename... Args> void header(Args &&...args) { if (!detail::quiet()) detail::print_impl(Color::BoldCyan, "", std::forward<Args>(args)...); }
 
-template<typename... Args>
-void success(Args &&...args) {
-    detail::print_impl(Color::Green, "[OK]   ", std::forward<Args>(args)...);
-}
-
-template<typename... Args>
-void warn(Args &&...args) {
-    detail::print_impl(Color::Yellow, "[WARN] ", std::forward<Args>(args)...);
-}
-
-template<typename... Args>
-void error(Args &&...args) {
-    detail::print_impl(Color::Red, "[ERR]  ", std::forward<Args>(args)...);
-}
-
-template<typename... Args>
-void header(Args &&...args) {
-    detail::print_impl(Color::BoldCyan, "", std::forward<Args>(args)...);
-}
-
-inline void divider() {
-    detail::print_raw(Color::Gray, "────────────────────────────────────────────────────────────");
-}
+inline void divider() { if (!detail::quiet()) detail::print_raw(Color::Gray, "------------------------------------------------------------"); }
 
 template<typename... Args>
 void epoch(int e, int total, Args &&...args) {
+    if (detail::quiet()) return;
     const int width = detail::digit_count(total);
-    std::cout << Color::BoldCyan << "[Epoch " << std::setw(width) << e << "/" << total << "]"
-              << Color::Reset;
+    std::cout << Color::BoldCyan << "[Epoch " << std::setw(width) << e << "/" << total << "]" << Color::Reset;
     (std::cout << ... << std::forward<Args>(args));
     std::cout << Color::Reset << '\n';
 }
 
 template<typename... Args>
 void metric(const std::string &name, Args &&...values) {
-    std::cout << Style::Bold << "  " << name << Style::Reset << "  →  " << Color::Green;
+    if (detail::quiet()) return;
+    std::cout << Style::Bold << "  " << name << Style::Reset << "  ->  " << Color::Green;
     (detail::print_arg(std::forward<Args>(values)), ...);
     std::cout << Color::Reset << '\n';
 }
 
 template<typename... Args>
 void tree_node(int depth, bool is_leaf, Args &&...content) {
-    std::cout << std::string(static_cast<size_t>(depth) * 2, ' ');
-    if (is_leaf) {
-        std::cout << Color::Green;
-    } else {
-        std::cout << Color::Cyan;
-    }
+    if (detail::quiet()) return;
+    std::cout << std::string(static_cast<size_t>(depth) * 2, ' ') << (is_leaf ? Color::Green : Color::Cyan);
     (std::cout << ... << std::forward<Args>(content));
     std::cout << Color::Reset << '\n';
 }
 
-template<typename... Args>
-void table_header(Args &&...cols) {
-    std::cout << Style::Bold;
-    (std::cout << ... << (std::setw(10) << std::forward<Args>(cols)));
-    std::cout << Style::Reset << '\n';
-}
-
-template<typename... Args>
-void table_row(Args &&...cols) {
-    (std::cout << ... << (std::setw(10) << std::forward<Args>(cols)));
-    std::cout << '\n';
-}
+template<typename... Args> void table_header(Args &&...cols) { if (!detail::quiet()) { std::cout << Style::Bold; (std::cout << ... << (std::setw(10) << std::forward<Args>(cols))); std::cout << Style::Reset << '\n'; } }
+template<typename... Args> void table_row(Args &&...cols) { if (!detail::quiet()) { (std::cout << ... << (std::setw(10) << std::forward<Args>(cols))); std::cout << '\n'; } }
 
 } // namespace Log
+} // namespace cml

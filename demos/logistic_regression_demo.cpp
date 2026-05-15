@@ -4,7 +4,9 @@
 #include "../metrics.hpp"
 #include "../pre.h"
 #include "demo_common.hpp"
-#include "../models.cpp"
+#include "../models.h"
+
+using namespace cml;
 
 int main() {
     Log::header("LogisticRegression Demo");

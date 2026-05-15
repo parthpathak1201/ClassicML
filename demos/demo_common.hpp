@@ -1,12 +1,15 @@
 #pragma once
 #include "../logger.hpp"
 #include "../pre.h"
+#include "../ino.h"
 #include "../type.hpp"
-#include "../utils.cpp"
+#include "../utils.h"
 #include <algorithm>
 #include <string>
 #include <tuple>
 #include <vector>
+
+using namespace cml;
 
 inline void print_loss_bars(const Vec &costs) {
     if (costs.empty()) return;

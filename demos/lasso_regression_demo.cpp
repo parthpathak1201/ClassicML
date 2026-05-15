@@ -3,8 +3,10 @@
 #include "../metrics.hpp"
 #include "../pre.h"
 #include "demo_common.hpp"
-#include "../models.cpp"
+#include "../models.h"
 #include <random>
+
+using namespace cml;
 
 int main() {
     Log::header("LassoRegression Demo");

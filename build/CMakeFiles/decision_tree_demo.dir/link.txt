@@ -1,0 +1,1 @@
+/usr/bin/c++ -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/decision_tree_demo.dir/demos/decision_tree_demo.cpp.o -o decision_tree_demo  libml_core.a

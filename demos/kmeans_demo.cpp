@@ -2,7 +2,9 @@
 #include "../logger.hpp"
 #include "../ino.h"
 #include "demo_common.hpp"
-#include "../models.cpp"
+#include "../models.h"
+
+using namespace cml;
 
 int main() {
     Log::header("KMeans Demo");

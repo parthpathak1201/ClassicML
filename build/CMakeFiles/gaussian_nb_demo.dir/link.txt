@@ -1,0 +1,1 @@
+/usr/bin/c++ -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/gaussian_nb_demo.dir/demos/gaussian_nb_demo.cpp.o -o gaussian_nb_demo  libml_core.a

@@ -1,0 +1,1 @@
+/usr/bin/c++ -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/knn_demo.dir/demos/knn_demo.cpp.o -o knn_demo  libml_core.a

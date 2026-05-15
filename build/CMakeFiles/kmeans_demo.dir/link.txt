@@ -1,0 +1,1 @@
+/usr/bin/c++ -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/kmeans_demo.dir/demos/kmeans_demo.cpp.o -o kmeans_demo  libml_core.a

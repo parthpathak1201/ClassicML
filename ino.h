@@ -3,6 +3,8 @@
 #include <string>
 #include <utility>
 
+namespace cml {
+
 // Load a CSV file into Matrix (features) and Vec (labels).
 // last_col_is_label: if true, last column is treated as label vector.
 // has_header: if true, skip the first row.
@@ -40,3 +42,5 @@ void print_matrix(const Matrix &X, int n_rows = 5);
 
 // Print a Vec to stdout.
 void print_vec(const Vec &v, int n_elems = 10);
+
+} // namespace cml

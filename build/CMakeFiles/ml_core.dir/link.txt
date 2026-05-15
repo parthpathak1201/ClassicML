@@ -1,0 +1,2 @@
+/usr/bin/ar qc libml_core.a CMakeFiles/ml_core.dir/utils.cpp.o CMakeFiles/ml_core.dir/ino.cpp.o CMakeFiles/ml_core.dir/models.cpp.o
+/usr/bin/ranlib libml_core.a
