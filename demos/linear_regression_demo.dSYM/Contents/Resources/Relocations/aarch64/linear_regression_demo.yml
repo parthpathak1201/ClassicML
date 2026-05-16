@@ -1,5 +1,0 @@
----
-triple:          'arm64-apple-darwin'
-binary-path:     '/Users/parthpathak/ClassicML/demos/linear_regression_demo'
-relocations:     []
-...
