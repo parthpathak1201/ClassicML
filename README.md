@@ -30,7 +30,6 @@ Built as a learning project to understand what happens under the hood.
 
 // Generate data
 auto [X, y] = generate_blobs(200, 3, 42);
-auto [X_train, X_test, y_train, y_test] = split_xy(X, y);
 
 // Scale
 StandardScaler scaler;
@@ -47,6 +46,14 @@ Vec preds = lr.predict(X_test);
 classification_report(y_test, preds);
 ```
 
+Compile with:
+
+```bash
+g++ -std=c++17 -O2 your_file.cpp utils.cpp ino.cpp -o out && ./out
+```
+
+`utils.cpp` and `ino.cpp` must be linked alongside — they contain non-inline definitions (`matinv`, `custom_exp`, CSV I/O, data generators).
+
 ---
 
 ## Optimizer
@@ -57,13 +64,14 @@ All gradient-based models share a single templated optimizer:
 GradientDescent<ParamType, DataType>(type, learning_rate, batch_size, lambda)
 ```
 
-Supports three modes:
+Three modes:
 
 - `Batch` — full-dataset gradient per step
 - `Stochastic` — one sample per step
 - `MiniBatch` — configurable batch size
 
-The update rule with optional weight decay:
+Update rule with optional weight decay:
+
 ```
 w = w - lr * (grad / n + λ * w)
 ```
@@ -113,35 +121,30 @@ regression_report(y_true, y_pred)       // prints everything
 
 ---
 
-## Building
-
-No build system yet — compile demos directly:
-
-```bash
-g++ -std=c++17 -O2 demos/logistic_regression_demo.cpp utils.cpp ino.cpp -o lr_demo && ./lr_demo
-```
-
-Each demo includes `cml.hpp`; compile `utils.cpp` and `ino.cpp` alongside it because they contain non-inline definitions (`matinv`, `custom_exp`, `help`, `docs`, and all `ino.cpp` functions).
-
-Each demo shows a different model with synthetic data.
-
----
-
 ## Project Structure
 
 ```
 ClassicML/
-├── cml.hpp           # Single user-facing include
-├── models/           # Per-model headers
-├── optimizer.h       # GradientDescent<T> template
-├── pre.h             # StandardScaler, MinMaxScaler, train_test_split
-├── metrics.hpp       # Evaluation metrics
+├── cml.hpp              # Single include — pull this in for everything
+├── models/
+│   ├── linear_regression.hpp
+│   ├── logistic_regression.hpp
+│   ├── ridge_regression.hpp
+│   ├── lasso_regression.hpp
+│   ├── decision_tree.hpp
+│   ├── knn.hpp
+│   ├── kmeans.hpp
+│   ├── gaussian_nb.hpp
+│   ├── svm.hpp
+│   └── detail.hpp       # Shared training utilities
+├── optimizer.h          # GradientDescent<T> template
+├── params.hpp           # LinearParams with operator overloads
+├── pre.h                # StandardScaler, MinMaxScaler, train_test_split
+├── metrics.hpp          # Evaluation metrics
 ├── utils.h / utils.cpp  # Linear algebra, distance functions, math utils
-├── ino.h / ino.cpp   # Data generators and CSV I/O
-├── logger.hpp        # Colored terminal logging
-├── type.hpp          # Vec / Matrix type aliases
-├── params.hpp        # LinearParams with operator overloads
-└── demos/            # One demo per model
+├── ino.h / ino.cpp      # Data generators and CSV I/O
+├── logger.hpp           # Colored terminal logging
+└── type.hpp             # Vec / Matrix type aliases
 ```
 
 ---
@@ -150,24 +153,7 @@ ClassicML/
 
 A few things worth knowing about the internals:
 
-- **K-Means++ initialization** — centroids seeded by weighted distance² sampling, not randomly, so the algorithm converges faster and more reliably
+- **K-Means++ initialization** — centroids seeded by weighted distance² sampling rather than randomly, so the algorithm converges faster and more reliably
 - **Log-space Naive Bayes** — posteriors computed in log-space to avoid float underflow when multiplying many small probabilities
-- **Generic optimizer** — the gradient descent implementation is fully decoupled from model logic via a `compute_gradients` callback; adding a new model doesn't touch the optimizer
+- **Generic optimizer** — gradient descent is fully decoupled from model logic via a `compute_gradients` callback; adding a new model doesn't touch the optimizer
 - **Custom sigmoid** — uses a Taylor series `exp` implementation rather than `<cmath>` (was fun to write, `std::exp` is obviously faster in production)
-
----
-
-## Demos
-
-```bash
-# Each demo prints a loss curve, metrics, and model docs to the terminal
-demos/linear_regression_demo.cpp
-demos/logistic_regression_demo.cpp
-demos/decision_tree_demo.cpp
-demos/knn_demo.cpp
-demos/kmeans_demo.cpp
-demos/svm_demo.cpp
-demos/ridge_regression_demo.cpp
-demos/lasso_regression_demo.cpp
-demos/gaussian_nb_demo.cpp
-```
