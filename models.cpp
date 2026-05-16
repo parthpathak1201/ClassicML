@@ -267,7 +267,8 @@ private:
         size_t n_features = params.weights.size();
         size_t batch_size = end - start;
 
-
+        // Ensure gradients.weights has the correct size before writing to it
+        gradients.weights.resize(n_features);
         std::fill(gradients.weights.begin(), gradients.weights.end(), 0.0);
         gradients.bias = 0.0;
 
@@ -896,8 +897,14 @@ private:
     }
 
     int traverse(const Vec &sample, Node *node) const {
+        if (!node) {
+            throw std::invalid_argument("DecisionTree traverse reached null node");
+        }
         if (node->is_leaf()) {
             return node->label;
+        }
+        if (node->feature_idx < 0 || static_cast<size_t>(node->feature_idx) >= sample.size()) {
+            throw std::out_of_range("DecisionTree feature index out of range in traverse");
         }
         if (sample[node->feature_idx] <= node->threshold) {
             return traverse(sample, node->left);
@@ -952,6 +959,9 @@ public:
     }
 
     Vec predict(const Matrix &X_) {
+        if (!root) {
+            throw std::invalid_argument("DecisionTree has not been fitted yet. Call fit() first.");
+        }
         Matrix X = X_;
         X = scaler.transform(X);
         Vec predictions;
@@ -1033,11 +1043,14 @@ public:
 
     Vec predict(const Matrix &X_) {
         // Clamp k to training set size if user passed k > n_train
-        if (k > static_cast<int>(X_train.size())) {
-            Log::warn("k exceeded training set size; clamped to n_train=", X_train.size());
+        if (X_train.empty()) {
+            throw std::invalid_argument("KNearestNeighbors: no training data, call fit() first");
         }
-        k = std::min(k, static_cast<int>(X_train.size()));
 
+        int kk = std::min(k, static_cast<int>(X_train.size()));
+        if (kk <= 0) {
+            throw std::invalid_argument("KNearestNeighbors: invalid k value");
+        }
 
         Matrix X = scaler.transform(X_);
         Vec predictions;
@@ -1045,13 +1058,20 @@ public:
 
         for (const auto &sample: X) {
             std::vector<std::pair<double, int> > distances;
+            distances.reserve(X_train.size());
             for (size_t i = 0; i < X_train.size(); ++i) {
                 double dist = compute_distance(sample, X_train[i]);
                 distances.emplace_back(dist, static_cast<int>(y_train[i]));
             }
-            std::nth_element(distances.begin(), distances.begin() + k, distances.end());
+
+            size_t k_sz = static_cast<size_t>(kk);
+            if (k_sz < distances.size()) {
+                // partition so that the first k_sz elements are the k smallest (unordered)
+                std::nth_element(distances.begin(), distances.begin() + (k_sz - 1), distances.end());
+            }
+
             std::map<int, int> class_counts;
-            for (int i = 0; i < k; ++i) {
+            for (size_t i = 0; i < k_sz; ++i) {
                 class_counts[distances[i].second]++;
             }
             int max_count = 0;
@@ -1378,6 +1398,10 @@ public:
     }
 
     Vec predict(const Matrix &X) {
+        if (classes.empty()) {
+            throw std::invalid_argument("GaussianNB has not been fitted yet. Call fit() first.");
+        }
+
         Vec preds;
 
         for (const auto &sample: X) {
@@ -1397,6 +1421,10 @@ public:
     }
 
     Matrix predict_prob(const Matrix &X) {
+        if (classes.empty()) {
+            throw std::invalid_argument("GaussianNB has not been fitted yet. Call fit() first.");
+        }
+
         Matrix all_scores;
 
         for (const auto &sample: X) {
