@@ -26,9 +26,7 @@ Built as a learning project to understand what happens under the hood.
 ## Quick Start
 
 ```cpp
-#include "models.cpp"
-#include "pre.h"
-#include "ino.h"
+#include "cml.hpp"
 
 // Generate data
 auto [X, y] = generate_blobs(200, 3, 42);
@@ -120,10 +118,12 @@ regression_report(y_true, y_pred)       // prints everything
 No build system yet — compile demos directly:
 
 ```bash
-g++ -std=c++17 -O2 demos/logistic_regression_demo.cpp -o lr_demo && ./lr_demo
+g++ -std=c++17 -O2 demos/logistic_regression_demo.cpp utils.cpp ino.cpp -o lr_demo && ./lr_demo
 ```
 
-Each demo is self-contained and shows a different model with synthetic data.
+Each demo includes `cml.hpp`; compile `utils.cpp` and `ino.cpp` alongside it because they contain non-inline definitions (`matinv`, `custom_exp`, `help`, `docs`, and all `ino.cpp` functions).
+
+Each demo shows a different model with synthetic data.
 
 ---
 
@@ -131,9 +131,10 @@ Each demo is self-contained and shows a different model with synthetic data.
 
 ```
 ClassicML/
-├── models.cpp        # All model implementations
+├── cml.hpp           # Single user-facing include
+├── models/           # Per-model headers
 ├── optimizer.h       # GradientDescent<T> template
-├── pre.h / pre.cpp   # StandardScaler, MinMaxScaler, train_test_split
+├── pre.h             # StandardScaler, MinMaxScaler, train_test_split
 ├── metrics.hpp       # Evaluation metrics
 ├── utils.h / utils.cpp  # Linear algebra, distance functions, math utils
 ├── ino.h / ino.cpp   # Data generators and CSV I/O
