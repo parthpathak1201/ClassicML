@@ -1,12 +1,6 @@
 // Linear regression demo: 1D then 2D synthetic regression with scaling and R² report.
-#include "../logger.hpp"
-#include "../ino.h"
-#include "../metrics.hpp"
-#include "../pre.h"
+#include "../cml.hpp"
 #include "demo_common.hpp"
-#include "../models.cpp"
-#include <cmath>
-#include <random>
 
 int main() {
     Log::header("LinearRegression Demo");

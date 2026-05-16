@@ -1,9 +1,6 @@
 // Decision tree demo: 3-class blobs, print_tree, shallow vs deep trees.
-#include "../logger.hpp"
-#include "../ino.h"
-#include "../metrics.hpp"
+#include "../cml.hpp"
 #include "demo_common.hpp"
-#include "../models.cpp"
 
 int main() {
     Log::header("DecisionTree Demo");

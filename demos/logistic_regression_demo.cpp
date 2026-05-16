@@ -1,10 +1,6 @@
 // Logistic regression demo: linearly separable blobs, probabilities, classification report.
-#include "../logger.hpp"
-#include "../ino.h"
-#include "../metrics.hpp"
-#include "../pre.h"
+#include "../cml.hpp"
 #include "demo_common.hpp"
-#include "../models.cpp"
 
 int main() {
     Log::header("LogisticRegression Demo");

@@ -1,9 +1,6 @@
 // Gaussian Naive Bayes demo: hand-crafted 3-class Gaussian clusters.
-#include "../logger.hpp"
-#include "../metrics.hpp"
+#include "../cml.hpp"
 #include "demo_common.hpp"
-#include "../models.cpp"
-#include <random>
 
 int main() {
     Log::header("GaussianNB Demo");

@@ -1,9 +1,6 @@
 // SVM demo: linearly separable data; compare lambda=0.001 vs 0.1.
-#include "../logger.hpp"
-#include "../ino.h"
-#include "../metrics.hpp"
+#include "../cml.hpp"
 #include "demo_common.hpp"
-#include "../models.cpp"
 
 int main() {
     Log::header("SVM Demo");

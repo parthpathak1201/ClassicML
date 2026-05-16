@@ -1,8 +1,6 @@
 // K-Means demo: 3 blobs, Random vs KMeans++ init, centroids and inertia.
-#include "../logger.hpp"
-#include "../ino.h"
+#include "../cml.hpp"
 #include "demo_common.hpp"
-#include "../models.cpp"
 
 int main() {
     Log::header("KMeans Demo");

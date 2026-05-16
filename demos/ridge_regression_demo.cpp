@@ -1,11 +1,6 @@
 // Ridge regression demo: same synthetic data as linear regression; compare L2 strengths.
-#include "../logger.hpp"
-#include "../ino.h"
-#include "../metrics.hpp"
-#include "../pre.h"
+#include "../cml.hpp"
 #include "demo_common.hpp"
-#include "../models.cpp"
-#include <random>
 
 int main() {
     Log::header("RidgeRegression Demo");

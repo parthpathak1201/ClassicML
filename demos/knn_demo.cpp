@@ -1,9 +1,6 @@
 // KNN demo: 2-class blobs; compare k=1,5,15.
-#include "../logger.hpp"
-#include "../ino.h"
-#include "../metrics.hpp"
+#include "../cml.hpp"
 #include "demo_common.hpp"
-#include "../models.cpp"
 
 int main() {
     Log::header("KNearestNeighbors Demo");

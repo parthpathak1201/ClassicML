@@ -1,10 +1,6 @@
 // Lasso demo: sparse-relevant features; L1 drives unused weights toward zero.
-#include "../logger.hpp"
-#include "../metrics.hpp"
-#include "../pre.h"
+#include "../cml.hpp"
 #include "demo_common.hpp"
-#include "../models.cpp"
-#include <random>
 
 int main() {
     Log::header("LassoRegression Demo");
