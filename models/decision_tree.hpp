@@ -1,4 +1,5 @@
 #pragma once
+#include "../estimator.hpp"
 #include "../type.hpp"
 #include "../params.hpp"
 #include "../utils.h"
@@ -16,6 +17,7 @@
 #include <random>
 #include <limits>
 #include <string>
+#include <memory>
 
 // DecisionTree
 // CART-style classifier using Gini impurity and recursive binary splits.
@@ -23,21 +25,16 @@
 //   DecisionTree dt(10, 2);
 //   dt.fit(X_train, y_train);
 //   Vec preds = dt.predict(X_test);
-class [[maybe_unused]] DecisionTree {
+class [[maybe_unused]] DecisionTree : public Estimator {
 public:
     struct Node {
         int feature_idx = -1;
         double threshold = 0.0;
-        Node *left = nullptr;
-        Node *right = nullptr;
+        std::unique_ptr<Node> left;
+        std::unique_ptr<Node> right;
         int label = -1;
 
         [[nodiscard]] bool is_leaf() const { return feature_idx == -1; }
-
-        ~Node() {
-            delete left;
-            delete right;
-        }
     };
 
 private:
@@ -48,7 +45,7 @@ private:
 
     int max_depth;
     int min_samples_split;
-    Node *root = nullptr;
+    std::unique_ptr<Node> root;
     StandardScaler scaler;
 
     // Gini impurity: measures node "mixedness". Pure node = 0.
@@ -128,9 +125,9 @@ private:
         return {best_feature, best_threshold};
     }
 
-    Node *build_tree(const Matrix &X, const Vec &y, const std::vector<size_t> &indices, int depth) {
+    std::unique_ptr<Node> build_tree(const Matrix &X, const Vec &y, const std::vector<size_t> &indices, int depth) {
         if (depth >= max_depth || indices.size() < min_samples_split) {
-            Node *leaf = new Node();
+            auto leaf = std::make_unique<Node>();
             leaf->label = majority_vote(indices, y);
             return leaf;
         }
@@ -140,7 +137,7 @@ private:
             labels.insert(static_cast<int>(y[idx]));
         }
         if (labels.size() == 1) {
-            Node *leaf = new Node();
+            auto leaf = std::make_unique<Node>();
             leaf->label = *labels.begin();
             return leaf;
         }
@@ -148,7 +145,7 @@ private:
         SplitResult split = best_split(X, y, indices);
 
         if (split.feature_idx == -1) {
-            Node *leaf = new Node();
+            auto leaf = std::make_unique<Node>();
             leaf->label = majority_vote(indices, y);
             return leaf;
         }
@@ -162,7 +159,7 @@ private:
             }
         }
 
-        Node *node = new Node();
+        auto node = std::make_unique<Node>();
         node->feature_idx = split.feature_idx;
         node->threshold = split.threshold;
         node->left = build_tree(X, y, left_indices, depth + 1);
@@ -181,9 +178,9 @@ private:
             throw std::out_of_range("DecisionTree feature index out of range in traverse");
         }
         if (sample[node->feature_idx] <= node->threshold) {
-            return traverse(sample, node->left);
+            return traverse(sample, node->left.get());
         } else {
-            return traverse(sample, node->right);
+            return traverse(sample, node->right.get());
         }
     }
 
@@ -193,18 +190,23 @@ private:
             Log::tree_node(depth, true, branch, "class=", node->label, " ", Color::Green, "✓");
         } else {
             Log::tree_node(depth, false, branch, "X[", node->feature_idx, "] <= ", node->threshold);
-            print_tree_helper(node->left, depth + 1, "├── ");
-            print_tree_helper(node->right, depth + 1, "└── ");
+            print_tree_helper(node->left.get(), depth + 1, "├── ");
+            print_tree_helper(node->right.get(), depth + 1, "└── ");
         }
     }
 
 public:
     DecisionTree(int max_depth = 10, int min_samples_split = 2)
-        : max_depth(max_depth), min_samples_split(min_samples_split), root(nullptr) {
+        : max_depth(max_depth), min_samples_split(min_samples_split) {
     }
 
-    ~DecisionTree() {
-        delete root;
+    DecisionTree(const DecisionTree &) = delete;
+    DecisionTree &operator=(const DecisionTree &) = delete;
+    DecisionTree(DecisionTree &&) = default;
+    DecisionTree &operator=(DecisionTree &&) = default;
+
+    void fit(const Matrix &X_, const Vec &y) override {
+        fit(X_, y, false);
     }
 
     static void docs() {
@@ -220,10 +222,7 @@ public:
         Matrix X = X_;
         scaler.fit(X);
         X = scaler.transform(X);
-        if (root) {
-            delete root;
-            root = nullptr;
-        }
+        root.reset();
         std::vector<size_t> initial_indices(X.size());
         std::iota(initial_indices.begin(), initial_indices.end(), 0);
         root = build_tree(X, y, initial_indices, 0);
@@ -232,7 +231,7 @@ public:
         }
     }
 
-    Vec predict(const Matrix &X_) {
+    Vec predict(const Matrix &X_) override {
         if (!root) {
             throw std::invalid_argument("DecisionTree has not been fitted yet. Call fit() first.");
         }
@@ -241,12 +240,12 @@ public:
         Vec predictions;
         predictions.reserve(X.size());
         for (const auto &sample: X) {
-            predictions.push_back(traverse(sample, root));
+            predictions.push_back(traverse(sample, root.get()));
         }
         return predictions;
     }
 
-    double score(const Vec &y_true, const Vec &y_pred) {
+    double score(const Vec &y_true, const Vec &y_pred) override {
         if (y_true.size() != y_pred.size()) {
             throw std::invalid_argument("Dimension mismatch between true and predicted values.");
         }
@@ -261,6 +260,6 @@ public:
 
     void print_tree() const {
         Log::header("DecisionTree");
-        print_tree_helper(root, 0, "└── ");
+        print_tree_helper(root.get(), 0, "└── ");
     }
 };

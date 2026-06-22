@@ -1,4 +1,5 @@
 #pragma once
+#include "../estimator.hpp"
 #include "../type.hpp"
 #include "../params.hpp"
 #include "../utils.h"
@@ -23,7 +24,7 @@
 //   GaussianNB gnb;
 //   gnb.fit(X_train, y_train);
 //   Vec preds = gnb.predict(X_test);
-class [[maybe_unused]] GaussianNB {
+class [[maybe_unused]] GaussianNB : public Estimator {
 public:
     GaussianNB() = default;
 
@@ -132,6 +133,10 @@ private:
     }
 
 public:
+    void fit(const Matrix &X, const Vec &y) override {
+        fit(X, y, false);
+    }
+
     void fit(const Matrix &X, const Vec &y, bool verbose = false) {
         X_train = X;
         y_train = y;
@@ -142,7 +147,7 @@ public:
         }
     }
 
-    Vec predict(const Matrix &X) {
+    Vec predict(const Matrix &X) override {
         if (classes.empty()) {
             throw std::invalid_argument("GaussianNB has not been fitted yet. Call fit() first.");
         }
@@ -179,7 +184,7 @@ public:
         return all_scores;
     }
 
-    double score(const Vec &y_true, const Vec &y_pred) {
+    double score(const Vec &y_true, const Vec &y_pred) override {
         int correct = 0;
 
         for (size_t i = 0; i < y_true.size(); ++i) {

@@ -13,9 +13,9 @@ long double custom_exp(long double x) {
 }
 
 // Gauss-Jordan elimination to compute matrix inverse in-place
-std::vector<std::vector<long double> > matinv(std::vector<std::vector<long double> > A) {
+std::vector<std::vector<double>> matinv(std::vector<std::vector<double>> A) {
     int n = static_cast<int>(A.size());
-    std::vector<std::vector<long double> > result(n, std::vector<long double>(n, 0.0));
+    std::vector<std::vector<double>> result(n, std::vector<double>(n, 0.0));
     for (int i = 0; i < n; ++i) {
         result[i][i] = 1.0;
     }
@@ -24,7 +24,7 @@ std::vector<std::vector<long double> > matinv(std::vector<std::vector<long doubl
 
     for (int i = 0; i < n - 1; i++) {
         for (int j = i + 1; j < n; j++) {
-            long double factor = A[j][i] / A[i][i];
+            double factor = A[j][i] / A[i][i];
             for (int k = 0; k < n; k++) {
                 A[j][k] -= factor * A[i][k];
                 result[j][k] -= factor * result[i][k];
@@ -35,7 +35,7 @@ std::vector<std::vector<long double> > matinv(std::vector<std::vector<long doubl
     // step 2 - eliminate the upper half
     for (int i = n - 1; i > 0; i--) {
         for (int j = i - 1; j >= 0; j--) {
-            long double factor = A[j][i] / A[i][i];
+            double factor = A[j][i] / A[i][i];
             for (int k = 0; k < n; k++) {
                 A[j][k] -= factor * A[i][k];
                 result[j][k] -= factor * result[i][k];
@@ -45,7 +45,7 @@ std::vector<std::vector<long double> > matinv(std::vector<std::vector<long doubl
 
     // step 3 - fix the diagonal
     for (int i = 0; i < n; i++) {
-        long double factor = A[i][i];
+        double factor = A[i][i];
         for (int k = 0; k < n; k++) {
             A[i][k] /= factor;
             result[i][k] /= factor;

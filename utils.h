@@ -49,9 +49,9 @@ long double custom_exp(long double x);
 inline long double sigmoid(long double z) { return 1.0L / (1.0L + custom_exp(-z)); }
 
 // dot product of two vectors
-inline long double dot(const std::vector<long double> &a,
-                       const std::vector<long double> &b) {
-    long double result = 0.0;
+inline double dot(const std::vector<double> &a,
+                  const std::vector<double> &b) {
+    double result = 0.0;
     for (size_t i = 0; i < a.size(); ++i) {
         result += a[i] * b[i];
     }
@@ -185,7 +185,9 @@ inline long double MAE(const std::vector<long double> &y_true,
 inline long double R2(const std::vector<long double> &y_true,
                       const std::vector<long double> &y_pred) {
     long double ss_res = 0.0, ss_tot = 0.0;
-    long double mean = vec_mean({y_true})[0];
+    long double mean = 0.0;
+    for (const auto &val : y_true) mean += val;
+    mean /= y_true.size();
     for (size_t i = 0; i < y_true.size(); ++i) {
         ss_res += pwr(y_true[i] - y_pred[i], 2);
         ss_tot += pwr(y_true[i] - mean, 2);
@@ -242,11 +244,14 @@ subtract(const std::vector<std::vector<long double> > &A,
 }
 
 // Gauss-Jordan elimination to compute matrix inverse in-place
-std::vector<std::vector<long double> > matinv(std::vector<std::vector<long double> > A);
+std::vector<std::vector<double>> matinv(std::vector<std::vector<double>> A);
 
 // Variance
 inline long double variance(const std::vector<long double> &data) {
-    long double mean = vec_mean({data})[0];
+    if (data.empty()) return 0.0;
+    long double mean = 0.0;
+    for (const auto &val : data) mean += val;
+    mean /= data.size();
     long double var = 0.0;
     for (const auto &val: data) {
         var += pwr(val - mean, 2);
@@ -257,8 +262,12 @@ inline long double variance(const std::vector<long double> &data) {
 // Covariance
 inline long double covariance(const std::vector<long double> &x,
                               const std::vector<long double> &y) {
-    long double mean_x = vec_mean({x})[0];
-    long double mean_y = vec_mean({y})[0];
+    if (x.empty()) return 0.0;
+    long double mean_x = 0.0, mean_y = 0.0;
+    for (const auto &val : x) mean_x += val;
+    for (const auto &val : y) mean_y += val;
+    mean_x /= x.size();
+    mean_y /= y.size();
     long double cov = 0.0;
     for (size_t i = 0; i < x.size(); ++i) {
         cov += (x[i] - mean_x) * (y[i] - mean_y);

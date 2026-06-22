@@ -1,4 +1,5 @@
 #pragma once
+#include "../estimator.hpp"
 #include "../type.hpp"
 #include "../params.hpp"
 #include "../utils.h"
@@ -23,7 +24,7 @@
 //   SVM svm(0.001, 0.01, 1000);
 //   svm.fit(X_train, y_train);
 //   Vec preds = svm.predict(X_test);
-class [[maybe_unused]] SVM {
+class [[maybe_unused]] SVM : public Estimator {
 public:
     SVM(double lr = 0.001, double lambda = 0.01, int n_epochs = 1000)
         : lr(lr), lambda(lambda), n_epochs(n_epochs), bias(0.0) {
@@ -36,6 +37,10 @@ public:
         Log::info("fit(X, y, verbose), predict(X) → Vec");
         Log::info("score(y_true, y_pred) → accuracy");
         Log::divider();
+    }
+
+    void fit(const Matrix &X, const Vec &y) override {
+        fit(X, y, false);
     }
 
     void fit(const Matrix &X, const Vec &y, bool verbose = false) {
@@ -84,7 +89,7 @@ public:
         }
     }
 
-    Vec predict(const Matrix &X) {
+    Vec predict(const Matrix &X) override {
         Matrix X_scaled = X;
         X_scaled = scaler.transform(X_scaled);
 
@@ -98,7 +103,7 @@ public:
         return from_svm_labels(y_pred_svm);
     }
 
-    double score(const Vec &y_true, const Vec &y_pred) {
+    double score(const Vec &y_true, const Vec &y_pred) override {
         if (y_true.empty() || y_true.size() != y_pred.size()) {
             return 0.0;
         }

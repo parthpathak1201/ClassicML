@@ -12,20 +12,9 @@
 #include <algorithm>
 #include <numeric>
 #include <stdexcept>
-#include <map>
-#include <set>
-#include <random>
-#include <limits>
 #include <string>
 
-// LogisticRegression
-// Binary classifier using sigmoid + gradient descent. Outputs probabilities via predict_prob().
-// Supports L2 regularization via the optimizer's l2_lambda parameter.
-// Usage:
-//   LogisticRegression lr(GradientDescent<...>::MiniBatch, 0.01, 32, 0.0);
-//   lr.fit(X_train, y_train, 500);
-//   Vec preds = lr.predict(X_test);
-class [[maybe_unused]] LogisticRegression : public Estimator {
+class BaseLinearModel : public Estimator {
 public:
     Vec weights;
     StandardScaler scaler;
@@ -34,7 +23,7 @@ public:
     GradientDescent<LinearParams, Matrix> *optimizer;
     bool owns_optimizer;
 
-    explicit LogisticRegression(
+    BaseLinearModel(
         GradientDescent<LinearParams, Matrix>::Type grad_desc_type = GradientDescent<LinearParams, Matrix>::Batch,
         double learning_rate = 0.01,
         size_t m_batch_size = 32,
@@ -46,7 +35,7 @@ public:
         this->costs = {};
     }
 
-    explicit LogisticRegression(GradientDescent<LinearParams, Matrix> *opt) {
+    BaseLinearModel(GradientDescent<LinearParams, Matrix> *opt) {
         optimizer = opt;
         owns_optimizer = false;
         this->scaler = StandardScaler();
@@ -54,10 +43,10 @@ public:
         this->costs = {};
     }
 
-    LogisticRegression(const LogisticRegression&) = delete;
-    LogisticRegression& operator=(const LogisticRegression&) = delete;
+    BaseLinearModel(const BaseLinearModel&) = delete;
+    BaseLinearModel& operator=(const BaseLinearModel&) = delete;
 
-    LogisticRegression(LogisticRegression&& other) noexcept
+    BaseLinearModel(BaseLinearModel&& other) noexcept
         : weights(std::move(other.weights)),
           scaler(std::move(other.scaler)),
           bias(other.bias),
@@ -68,7 +57,7 @@ public:
         other.owns_optimizer = false;
     }
 
-    LogisticRegression& operator=(LogisticRegression&& other) noexcept {
+    BaseLinearModel& operator=(BaseLinearModel&& other) noexcept {
         if (this != &other) {
             if (owns_optimizer && optimizer) delete optimizer;
             weights = std::move(other.weights);
@@ -83,49 +72,23 @@ public:
         return *this;
     }
 
-    ~LogisticRegression() {
+    ~BaseLinearModel() override {
         if (owns_optimizer && optimizer) {
             delete optimizer;
         }
     }
 
-    static void docs() {
-        Log::header("LogisticRegression");
-        Log::info("Binary classifier using sigmoid + gradient descent.");
-        Log::info("Constructor: LogisticRegression(grad_type, lr, batch_size, l2_lambda)");
-        Log::info("fit(X, y, n_epochs, verbose)");
-        Log::info("predict(X) → Vec, predict_prob(X) → Vec");
-        Log::info("score(y_true, y_pred) → accuracy");
-        Log::divider();
+    virtual double compute_regularization_cost(const Vec &w, size_t n_samples) const {
+        double l2 = 0.0;
+        for (const auto &v : w) l2 += v * v;
+        double lambda = optimizer->get_l2_lambda();
+        if (lambda == 0.0) return 0.0;
+        return (lambda / (2.0 * static_cast<double>(n_samples))) * l2;
     }
 
 private:
-    void compute_gradients(const Matrix &X, const Vec &y, const size_t *start, const size_t *end,
-                           const LinearParams &params, LinearParams &gradients) {
-        size_t n_features = params.weights.size();
-        size_t batch_size = end - start;
-
-        // Ensure gradients.weights has the correct size before writing to it
-        gradients.weights.resize(n_features);
-        std::fill(gradients.weights.begin(), gradients.weights.end(), 0.0);
-        gradients.bias = 0.0;
-
-        for (size_t i = 0; i < batch_size; ++i) {
-            size_t idx = start[i];
-
-
-            double z = std::inner_product(X[idx].begin(), X[idx].end(), params.weights.begin(), 0.0) + params.bias;
-            double prediction = sigmoid(z);
-            double error = prediction - y[idx];
-
-            gradients.bias += error;
-
-
-            for (size_t j = 0; j < n_features; ++j) {
-                gradients.weights[j] += error * X[idx][j];
-            }
-        }
-    }
+    virtual void compute_gradients(const Matrix &X, const Vec &y, const size_t *start, const size_t *end,
+                                    const LinearParams &params, LinearParams &gradients) = 0;
 
 public:
     void fit(const Matrix &X, const Vec &y) override {
@@ -164,41 +127,26 @@ public:
             weights = params.weights;
             bias = params.bias;
 
-            double total_cost = 0.0;
+            double total_error = 0.0;
             for (size_t i = 0; i < n_samples; ++i) {
-                double z = std::inner_product(X_scaled[i].begin(), X_scaled[i].end(), weights.begin(), 0.0) + bias;
-                double prediction = sigmoid(z);
-
-                // Clip predictions to avoid log(0) in BCE loss
-                if (prediction == 0) {
-                    prediction = 1e-15;
-                } else if (prediction == 1) {
-                    prediction = 1 - 1e-15;
-                }
-
-                total_cost += -y[i] * log(prediction) - (1 - y[i]) * log(1 - prediction);
+                double pred = std::inner_product(X_scaled[i].begin(), X_scaled[i].end(), weights.begin(), 0.0) + bias;
+                total_error += (pred - y[i]) * (pred - y[i]);
             }
 
-            double l2_cost = 0.0;
-            for (const auto &w: weights) {
-                l2_cost += w * w;
-            }
-            double l2_lambda = optimizer->get_l2_lambda();
             costs.push_back(
-                (total_cost / static_cast<double>(n_samples)) + (l2_lambda / (2.0 * static_cast<double>(n_samples))) *
-                l2_cost);
+                (total_error / static_cast<double>(n_samples)) +
+                compute_regularization_cost(weights, n_samples));
             if (detail::log_epoch_milestone(epoch, n_epochs, verbose)) {
                 Log::epoch(static_cast<int>(epoch + 1), static_cast<int>(n_epochs),
                            Color::Yellow, " loss=", Color::White, costs.back());
             }
         }
         if (verbose && !costs.empty()) {
-            Log::success("LogisticRegression fit complete. final loss=", costs.back());
+            Log::success("fit complete. final loss=", costs.back());
         }
     }
 
-
-    Vec predict_prob(const Matrix &X) {
+    Vec predict(const Matrix &X) override {
         Matrix X_scaled = X;
         if (X_scaled.empty() || X_scaled[0].size() != weights.size()) {
             throw std::invalid_argument("Input data for prediction is invalid or dimensions mismatch.");
@@ -209,31 +157,22 @@ public:
         Vec predictions;
         predictions.reserve(X_scaled.size());
         for (const auto &sample: X_scaled) {
-            double z = std::inner_product(sample.begin(), sample.end(), weights.begin(), 0.0) + bias;
-            predictions.push_back(sigmoid(z));
+            predictions.push_back(std::inner_product(sample.begin(), sample.end(), weights.begin(), 0.0) + bias);
         }
         return predictions;
     }
 
-    Vec predict(const Matrix &X) override {
-        Vec temp = predict_prob(X);
-
-        for (auto &p: temp) {
-            if (p >= 0.5) {
-                p = 1.0;
-            } else {
-                p = 0.0;
-            }
-        }
-        return temp;
-    }
-
     double score(const Vec &y_true, const Vec &y_pred) override {
-        if (y_true.size() != y_pred.size())
+        if (y_true.size() != y_pred.size()) {
             throw std::invalid_argument("Dimension mismatch between true and predicted values.");
-        double correct = 0;
-        for (size_t i = 0; i < y_true.size(); ++i)
-            if (y_true[i] == y_pred[i]) correct++;
-        return correct / y_true.size();
+        }
+
+        long double ss_res = 0.0, ss_tot = 0.0;
+        long double mean = std::accumulate(y_true.begin(), y_true.end(), 0.0) / y_true.size();
+        for (size_t i = 0; i < y_true.size(); ++i) {
+            ss_res += (y_true[i] - y_pred[i]) * (y_true[i] - y_pred[i]);
+            ss_tot += (y_true[i] - mean) * (y_true[i] - mean);
+        }
+        return 1.0 - (ss_res / ss_tot);
     }
 };

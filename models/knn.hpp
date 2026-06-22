@@ -1,4 +1,5 @@
 #pragma once
+#include "../estimator.hpp"
 #include "../type.hpp"
 #include "../params.hpp"
 #include "../utils.h"
@@ -23,7 +24,7 @@
 //   KNearestNeighbors knn(5, KNearestNeighbors::Euclidean);
 //   knn.fit(X_train, y_train);
 //   Vec preds = knn.predict(X_test);
-class [[maybe_unused]] KNearestNeighbors {
+class [[maybe_unused]] KNearestNeighbors : public Estimator {
 public:
     enum DistanceType { Manhattan, Euclidean, Cosine };
 
@@ -40,11 +41,14 @@ public:
         Log::divider();
     }
 
-    int k;
-    DistanceType distance_type;
-    StandardScaler scaler;
-    Matrix X_train;
-    Vec y_train;
+    void fit(const Matrix &X, const Vec &y) override {
+        fit(X, y, false);
+    }
+
+    int get_k() const { return k; }
+    void set_k(int k_) { k = k_; }
+    DistanceType get_distance_type() const { return distance_type; }
+    void set_distance_type(DistanceType dt) { distance_type = dt; }
 
     void fit(const Matrix &X, const Vec &y, bool verbose = false) {
         scaler.fit(X);
@@ -61,13 +65,13 @@ public:
         } else if (distance_type == Manhattan) {
             return manhattan_distance(a, b);
         } else if (distance_type == Cosine) {
-            return cosine(a, b);
+            return 1.0 - cosine(a, b);
         }
 
         return euclidean_dist(a, b); //default
     }
 
-    Vec predict(const Matrix &X_) {
+    Vec predict(const Matrix &X_) override {
         // Clamp k to training set size if user passed k > n_train
         if (X_train.empty()) {
             throw std::invalid_argument("KNearestNeighbors: no training data, call fit() first");
@@ -92,7 +96,6 @@ public:
 
             size_t k_sz = static_cast<size_t>(kk);
             if (k_sz < distances.size()) {
-                // partition so that the first k_sz elements are the k smallest (unordered)
                 std::nth_element(distances.begin(), distances.begin() + (k_sz - 1), distances.end());
             }
 
@@ -113,16 +116,23 @@ public:
         return predictions;
     }
 
-    long double score(const Vec &y_true, const Vec &y_pred) {
+    double score(const Vec &y_true, const Vec &y_pred) override {
         if (y_true.size() != y_pred.size()) {
             throw std::invalid_argument("Dimension mismatch between true and predicted values.");
         }
-        long double correct = 0;
+        double correct = 0;
         for (size_t i = 0; i < y_true.size(); ++i) {
             if (y_true[i] == y_pred[i]) {
                 correct++;
             }
         }
-        return correct / static_cast<long double>(y_true.size());
+        return correct / static_cast<double>(y_true.size());
     }
+
+private:
+    int k;
+    DistanceType distance_type;
+    StandardScaler scaler;
+    Matrix X_train;
+    Vec y_train;
 };

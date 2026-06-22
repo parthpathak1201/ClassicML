@@ -33,6 +33,8 @@ public:
     std::vector<std::vector<T>> transform(const std::vector<std::vector<T>> &data);
 
 private:
+    bool fitted_ = false;
+
     template <typename T>
     std::vector<T> __mean(const std::vector<std::vector<T>> &data);
 
@@ -52,6 +54,9 @@ public:
 
     template <typename T>
     std::vector<std::vector<T>> transform(const std::vector<std::vector<T>> &data);
+
+private:
+    bool fitted_ = false;
 };
 
 #endif
@@ -61,6 +66,7 @@ public:
 
 #include <algorithm>
 #include <cmath>
+#include <stdexcept>
 
 template <typename T>
 std::pair<std::vector<T>, std::vector<T>>
@@ -113,10 +119,12 @@ void StandardScaler::fit(const std::vector<std::vector<T>> &data) {
     auto s = __STD(data, m);
     mean_vec.assign(m.begin(), m.end());
     std_vec.assign(s.begin(), s.end());
+    fitted_ = true;
 }
 
 template <typename T>
 std::vector<std::vector<T>> StandardScaler::transform(const std::vector<std::vector<T>> &data) {
+    if (!fitted_) throw std::runtime_error("StandardScaler not fitted — call fit() before transform()");
     std::vector<std::vector<T>> out(data.size(), std::vector<T>(data[0].size()));
     for (size_t i = 0; i < data.size(); ++i)
         for (size_t j = 0; j < data[i].size(); ++j)

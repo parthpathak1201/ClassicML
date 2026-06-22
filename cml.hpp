@@ -3,6 +3,9 @@
 // Core types
 #include "type.hpp"
 
+// Base estimator interface
+#include "estimator.hpp"
+
 // Math utilities
 #include "utils.h"
 
